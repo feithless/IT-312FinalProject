@@ -1,11 +1,6 @@
 #include "Game.h"
 
-// Preprocessor macro for readability.
-#ifndef CLEAR_SCREEN
-#define CLEAR_SCREEN system("CLS");
-#endif // !CLEAR_SCREEN
-
-// Wrappers for cin/cout replacement
+// Wrappers for cin/cout replacement and clearing the console.
 void print(string msg)
 {
 	cout << msg << endl;
@@ -48,13 +43,29 @@ int intinput()
 {
 	return intinput("");
 }
+
+void ClearScreen(string msg)
+{
+	print(msg + ", press enter to continue.");
+	while (cin.get() != '\n');
+	system("CLS");
+}
 // End of wrappers
 
 
 void Game::SetUpPlayers()
 {
 	print("How many players would you like to have?");
-	int playerCount = intinput();
+	int playerCount = 0;
+
+	while (playerCount < 3)
+	{
+		playerCount = intinput();
+		if (playerCount < 3)
+			print("There must be 3 or more players.");
+	}
+
+
 	for (int i = 1; i <= playerCount; i++)
 	{
 		string msg = "Please enter player " + to_string(i) + "'s name:";
@@ -76,12 +87,11 @@ void Game::SetUpPlayers()
 		players[i].rightPlayer = &players[(playerCount + (i + 1)) % playerCount];
 		players[i].leftPlayer = &players[(playerCount + (i - 1)) % playerCount];
 
-		print(players[i].name + ": Left - " + players[i].leftPlayer->name + ", Right - " + players[i].rightPlayer->name + "\n");
+		// Mostly debug purposes.
+		print(players[i].name + " is to the right of " + players[i].leftPlayer->name);
 	}
 
-	print("Player setup complete, press enter to continue.");
-	while (std::cin.get() != '\n');
-	CLEAR_SCREEN
+	ClearScreen("Player setup complete");
 }
 
 int Game::RollDice(Player &currentPlayer)
@@ -105,19 +115,19 @@ int Game::RollDice(Player &currentPlayer)
 		case 1:
 			currentPlayer.leftPlayer->points += 1;
 			currentPlayer.points -= 1;
-			message += " and passed a chip to " + currentPlayer.leftPlayer->name + ".\n";
+			message += " and passed a chip to " + currentPlayer.leftPlayer->name + ".";
 			break;
 		case 2:
 			currentPlayer.points -= 1;
-			message += " and put a chip in the center.\n";
+			message += " and put a chip in the center.";
 			break;
 		case 3:
 			currentPlayer.rightPlayer->points += 1;
 			currentPlayer.points -= 1;
-			message += " and passed a chip to " + currentPlayer.rightPlayer->name + ".\n";
+			message += " and passed a chip to " + currentPlayer.rightPlayer->name + ".";
 			break;
 		default:
-			message += ", keeping their chip.\n";
+			message += ", keeping their chip.";
 			break;
 		}
 
@@ -161,22 +171,21 @@ void Game::PlayGame()
 				// If only one player left, break out of this for loop.
 				if (playersIn == 1)
 					goto END;
+				print("");
 			}
 			else
 			{
-				print("" + p.name + " doesn't have any points, so they passed to the player on their left.");
+				print("" + p.name + " doesn't have any points, so they passed to the player on their left.\n");
 			}
 		}
 
-		print("\n-==- -==- -==- -==- -==- -==- -==- -==-\n");
+		print("-==- -==- -==- -==- -==- -==- -==- -==-\n");
 		for (Player& p : this->players)
 		{
-			print(p.name + " has " + to_string(p.points) + " chips left.\n");
+			print(p.name + " has " + to_string(p.points) + " chips left.");
 		}
 
-		cout << "Round over, press enter to continue.";
-		while (std::cin.get() != '\n');
-		CLEAR_SCREEN
+		ClearScreen("\nRound over");
 
 	} while (true);
 
@@ -192,7 +201,6 @@ void Game::GameOver()
 		if (p.points > 0)
 		{
 			print(p.name + " wins with " + to_string(p.points) + " chips left!");
-			string s;
 			cout << "Game over!  Press enter to exit.";
 			while (cin.get() != '\n');
 		}
